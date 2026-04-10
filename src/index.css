@@ -1,0 +1,167 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+  /* Removemos o scrollbar-gutter: stable que ficava aqui no html, body */
+  body {
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+
+  /* ==========================================================================
+     FULLCALENDAR PREMIUM THEME
+     ========================================================================== */
+
+  .full-calendar-container {
+    --fc-border-color: #e2e8f0; /* slate-200 */
+    --fc-today-bg-color: #f0fdfa; /* teal-50/50 */
+    --fc-button-bg-color: #ffffff;
+    --fc-button-border-color: #e2e8f0;
+    --fc-button-text-color: #475569; /* slate-600 */
+    --fc-button-hover-bg-color: #f1f5f9;
+    --fc-button-hover-border-color: #cbd5e1;
+    --fc-button-active-bg-color: #f0fdfa;
+    --fc-button-active-border-color: #2dd4bf; /* teal-400 */
+    --fc-event-border-color: transparent;
+  }
+
+  /* Container Geral */
+  .fc {
+    @apply font-sans;
+    font-size: 0.875rem !important; /* 14px, padrão text-sm para alinhar com o resto do app */
+  }
+
+  /* Toolbar */
+  .fc .fc-toolbar {
+    @apply mb-4 flex-wrap gap-2;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1.125rem !important; /* 18px - text-lg */
+    @apply font-bold text-slate-800 capitalize;
+  }
+
+  /* Botões Nav e View */
+  .fc .fc-button {
+    @apply font-medium rounded-md shadow-none !bg-white !border-slate-200 !text-slate-600 hover:!bg-slate-50 hover:!text-slate-900 focus:!ring-2 focus:!ring-teal-500/10 active:!scale-95;
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.875rem !important;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+  }
+
+  .fc .fc-button-primary:not(:disabled).fc-button-active, 
+  .fc .fc-button-primary:not(:disabled):active {
+    @apply !bg-teal-50 !text-teal-700 !border-teal-200 !font-semibold;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+  }
+
+  .fc .fc-button-group {
+    @apply rounded-lg overflow-hidden shadow-sm ring-1 ring-slate-200 p-0.5 flex gap-0.5 bg-white;
+  }
+
+  .fc .fc-button-group .fc-button {
+    @apply border-none shadow-none rounded-md;
+    transition: background-color 0.3s ease, color 0.3s ease !important;
+  }
+
+  /* Cabeçalhos de Coluna (Dias) */
+  .fc .fc-col-header-cell {
+    @apply bg-slate-50/50 py-1.5 border-slate-200 font-medium text-slate-500;
+  }
+
+  .fc .fc-col-header-cell-cushion {
+    font-size: 12px !important;
+    @apply no-underline;
+  }
+
+  /* Slots de Tempo */
+  .fc .fc-timegrid-slot {
+    @apply h-[40px] border-slate-100;
+  }
+
+  .fc .fc-timegrid-slot-label-cushion,
+  .fc .fc-timegrid-slot-label {
+    font-size: 11px !important;
+    @apply font-medium text-slate-400 pr-1 align-top pt-1;
+  }
+
+  .fc .fc-timegrid-axis {
+    @apply border-r-0;
+  }
+
+  /* Linhas e Células */
+  .fc .fc-scrollgrid {
+    @apply rounded-xl border-slate-200 overflow-hidden;
+  }
+
+  .fc-theme-standard td, .fc-theme-standard th {
+    @apply border-slate-100;
+  }
+
+  /* Indicador de Agora */
+  .fc .fc-timegrid-now-indicator-line {
+    @apply border-teal-500 border-t-2;
+  }
+
+  .fc .fc-timegrid-now-indicator-arrow {
+    @apply border-teal-500 border-l-8;
+    margin-top: -4px;
+  }
+
+  /* Scrollers */
+  .fc .fc-scroller {
+    scrollbar-gutter: stable;
+  }
+
+  .fc .fc-scroller::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  .fc .fc-scroller::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .fc .fc-scroller::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+  }
+
+  /* Eventos */
+  .fc-event, .fc-event-main, .fc-v-event, .fc-h-event, .fc-list-event {
+    @apply rounded-md overflow-hidden;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  .fc .fc-timegrid-event, .fc .fc-daygrid-event {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  .fc-timegrid-event-harness {
+    @apply p-0.5;
+  }
+
+  /* Permite que o FullCalendar distribua as alturas igualmente com expandRows={true} */
+  .fc .fc-timegrid-slot {
+    /* Nenhuma altura fixa, rely on flex/expandRows */
+  }
+
+  /* Correções de Layout para evitar jitter */
+  .fc .fc-scrollgrid-section-sticky > div {
+    @apply bg-white;
+  }
+}
