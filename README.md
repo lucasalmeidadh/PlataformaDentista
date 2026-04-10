@@ -36,8 +36,8 @@ O projeto utiliza as tecnologias mais modernas do ecossistema JavaScript/React:
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/seu-usuario/agendamento.git
-cd agendamento
+git clone https://github.com/lucasalmeidadh/PlataformaDentista.git
+cd PlataformaDentista
 ```
 
 2. Instale as dependências:
@@ -67,7 +67,7 @@ src/
 ├── services/     # Integração com API (Axios) e serviços
 ├── ui/           # Componentes de interface reutilizáveis
 ├── App.tsx       # Componente principal e rotas
-└── main.tsx      # Ponto de entrada da aplicação
+├── main.tsx      # Ponto de entrada da aplicação
 ```
 
 ## 🤝 Contribuição
@@ -79,4 +79,4 @@ src/
 5. Abra um Pull Request
 
 ---
-Desenvolvido com ❤️ por [Seu Nome/Empresa]
+Desenvolvido por Lucas Almeida
