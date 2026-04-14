@@ -78,12 +78,14 @@ export const Odontogram = ({
   const treatments = propTreatments || localTreatments;
   const setTreatments = onChangeTreatments || setLocalTreatments;
 
-  const [showBudget, setShowBudget] = useState(false);
+  const [showBudget, setShowBudget] = useState<boolean>(() => (propTreatments?.length ?? 0) > 0);
   const [selectedTooth, setSelectedTooth] = useState<number | null>(null);
   const [selectedFaces, setSelectedFaces] = useState<ToothFace[]>([]);
   const [procSearch, setProcSearch] = useState('');
   const [isAddingProblem, setIsAddingProblem] = useState(false);
-  const [problemNote, setProblemNote] = useState('');
+  // problemNotes: chave = face ('V','L','M','D','O') ou 'all' (dente inteiro)
+  const [problemNotes, setProblemNotes] = useState<Record<string, string>>({});
+  const [sameNoteForAll, setSameNoteForAll] = useState(false);
 
   const getToothStyle = (number: number, isTop: boolean) => {
     const quadrant = Math.floor(number / 10);
@@ -118,7 +120,8 @@ export const Odontogram = ({
     setSelectedFaces([]);
     setProcSearch('');
     setIsAddingProblem(false);
-    setProblemNote('');
+    setProblemNotes({});
+    setSameNoteForAll(false);
   };
 
   const toggleFace = (face: ToothFace) => {
@@ -190,46 +193,71 @@ export const Odontogram = ({
     }
 
     if (selectedFaces.length > 0) {
-      selectedFaces.forEach(f => newToothState.faces[f] = 'problem');
+      selectedFaces.forEach(f => { newToothState.faces[f] = 'problem'; });
     } else {
       newToothState.status = 'problem';
     }
-    
-    if (problemNote.trim()) {
-      newToothState.notes = newToothState.notes 
-        ? `${newToothState.notes}\n- ${problemNote.trim()}` 
-        : `- ${problemNote.trim()}`;
+
+    // Monta as observações por face
+    const noteLines: string[] = [];
+    if (selectedFaces.length === 0) {
+      // Dente inteiro
+      const note = (problemNotes['all'] || '').trim();
+      if (note) noteLines.push(`- ${note}`);
+    } else if (selectedFaces.length === 1) {
+      // 1 face — o formulário salva sob a chave 'all'
+      const face = selectedFaces[0];
+      const note = (problemNotes['all'] || '').trim();
+      if (note) noteLines.push(`- Face ${face}: ${note}`);
+    } else if (sameNoteForAll) {
+      // mesmo problema para todas as faces
+      const note = (problemNotes['all'] || '').trim();
+      if (note) {
+        const facesLabel = selectedFaces.join(', ');
+        noteLines.push(`- Faces ${facesLabel}: ${note}`);
+      }
+    } else {
+      selectedFaces.forEach(face => {
+        const note = (problemNotes[face] || '').trim();
+        if (note) noteLines.push(`- Face ${face}: ${note}`);
+      });
+    }
+
+    if (noteLines.length > 0) {
+      newToothState.notes = newToothState.notes
+        ? `${newToothState.notes}\n${noteLines.join('\n')}`
+        : noteLines.join('\n');
     }
 
     setTeethStatus({ ...teethStatus, [selectedTooth]: newToothState });
-    setSelectedTooth(null);
-    setSelectedFaces([]);
+    // Mantém a modal aberta — só reseta o sub-formulário de problema
     setIsAddingProblem(false);
-    setProblemNote('');
+    setProblemNotes({});
+    setSameNoteForAll(false);
   };
   
   const markAsMissing = () => {
     if (!selectedTooth) return;
     setTeethStatus({ ...teethStatus, [selectedTooth]: { status: 'missing', faces: {} } });
-    setSelectedTooth(null);
+    // Mantém modal aberta, apenas reseta seleção de faces e sub-formulário
     setSelectedFaces([]);
     setIsAddingProblem(false);
-    setProblemNote('');
+    setProblemNotes({});
+    setSameNoteForAll(false);
   };
 
   const resetTooth = () => {
     if (!selectedTooth) return;
     const newStatus = { ...teethStatus };
     delete newStatus[selectedTooth];
-    
     const newTreatments = treatments.filter(t => t.tooth !== selectedTooth);
     setTreatments(newTreatments);
-
     setTeethStatus(newStatus);
-    setSelectedTooth(null);
+    // Mantém modal aberta, apenas reseta seleção de faces e sub-formulário
     setSelectedFaces([]);
     setIsAddingProblem(false);
-    setProblemNote('');
+    setProblemNotes({});
+    setSameNoteForAll(false);
   };
 
   const totalBudget = treatments.reduce((sum, item) => sum + item.price, 0);
@@ -270,7 +298,7 @@ export const Odontogram = ({
       >
         {isTop && <span className="text-[10px] sm:text-xs font-bold text-slate-400 group-hover:text-teal-600 transition-colors drop-shadow-sm">{number}</span>}
         <div className="relative">
-          <svg width="28" height="28" viewBox="0 0 32 32" className="transition-all duration-300 group-hover:-translate-y-2 group-hover:scale-110 drop-shadow-sm sm:w-[28px] sm:h-[28px] bg-white rounded-sm overflow-hidden">
+          <svg width="36" height="36" viewBox="0 0 32 32" className="transition-all duration-300 group-hover:-translate-y-2 group-hover:scale-110 drop-shadow-sm sm:w-[36px] sm:h-[36px] bg-white rounded-sm overflow-hidden">
             {renderPolygon('top', "0,0 32,0 24,8 8,8")}
             {renderPolygon('right', "32,0 24,8 24,24 32,32")}
             {renderPolygon('bottom', "0,32 32,32 24,24 8,24")}
@@ -362,9 +390,9 @@ export const Odontogram = ({
   }
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 h-full p-2">
+    <div className="flex flex-col md:flex-row gap-6 min-h-[640px] h-full p-2">
       {/* Esquerda: Odontograma Viz */}
-      <div className="flex-1 bg-white border border-slate-200 rounded-xl p-4 sm:p-6 flex flex-col items-center justify-center shadow-sm relative transition-all duration-300 overflow-hidden">
+      <div className="flex-1 bg-white border border-slate-200 rounded-xl p-4 sm:p-6 flex flex-col items-center justify-center shadow-sm relative transition-all duration-300 min-h-[720px]">
         
         {/* Fundo "Boca/Gengiva" sutil */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] max-w-2xl h-[400px] bg-red-50/40 rounded-[50%] blur-[60px] md:blur-[80px] -z-10 mix-blend-multiply pointer-events-none"></div>
@@ -387,7 +415,7 @@ export const Odontogram = ({
           <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-slate-500"></div> Ausente</div>
         </div>
 
-        <div className="flex flex-col gap-12 sm:gap-16 mt-16 sm:mt-24 w-full max-w-3xl items-center pb-24 relative z-0">
+        <div className="flex flex-col gap-16 sm:gap-24 mt-16 sm:mt-28 w-full max-w-4xl items-center pb-24 relative z-0">
           {/* Superior */}
           <div className="flex justify-center w-full">
             <div className="flex pr-2 sm:pr-8 border-r-2 border-slate-200/60 justify-end w-1/2 pl-4">
@@ -399,7 +427,7 @@ export const Odontogram = ({
           </div>
           
           {/* Inferior */}
-          <div className="flex justify-center w-full mt-12 sm:mt-16">
+          <div className="flex justify-center w-full mt-16 sm:mt-20">
             <div className="flex pr-2 sm:pr-8 border-r-2 border-slate-200/60 justify-end w-1/2 pl-4">
               {bottomArches.slice(0, 8).map(n => <div key={n} className="flex-1 flex justify-center"><ToothIcon number={n} /></div>)}
             </div>
@@ -409,6 +437,19 @@ export const Odontogram = ({
           </div>
         </div>
 
+        {/* Botão flutuante: reabre o painel de orçamento quando fechado mas há tratamentos */}
+        {treatments.length > 0 && !showBudget && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
+            <button
+              onClick={() => setShowBudget(true)}
+              className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg shadow-teal-600/30 transition-all hover:scale-105 active:scale-95"
+            >
+              <DollarSign size={14} />
+              Ver Orçamento ({treatments.length} procedimento{treatments.length > 1 ? 's' : ''})
+            </button>
+          </div>
+        )}
+
         {/* Popover de Seleção de Tratamentos e Faces */}
         <AnimatePresence>
           {selectedTooth && (
@@ -417,14 +458,14 @@ export const Odontogram = ({
                 initial={{ opacity: 0 }} 
                 animate={{ opacity: 1 }} 
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 z-40 bg-slate-900/10 backdrop-blur-sm rounded-xl" 
+                className="fixed inset-0 z-[190] bg-slate-900/20 backdrop-blur-sm" 
                 onClick={() => { setSelectedTooth(null); setSelectedFaces([]); }} 
               />
               <motion.div
                 initial={{ opacity: 0, scale: 0.9, x: "-50%", y: "-40%" }}
                 animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
                 exit={{ opacity: 0, scale: 0.9, x: "-50%", y: "-40%" }}
-                className="absolute z-[60] left-1/2 top-1/2 bg-white border border-slate-200 shadow-2xl rounded-xl p-5 w-[420px] max-w-[95vw] max-h-[90%] flex flex-col"
+                className="fixed z-[200] left-1/2 top-1/2 bg-white border border-slate-200 shadow-2xl rounded-xl p-5 w-[560px] max-w-[95vw] max-h-[85vh] flex flex-col"
               >
                 <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
                   <h4 className="font-bold text-slate-800 text-sm">Prontuário Dente {selectedTooth}</h4>
@@ -438,18 +479,81 @@ export const Odontogram = ({
 
                     <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Ações Clínicas</div>
                     {isAddingProblem ? (
-                      <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl shadow-inner">
-                        <label className="text-[11px] font-bold text-red-800 mb-2 block uppercase tracking-wide">Observação Adicional</label>
-                        <textarea 
-                          className="w-full text-xs p-3 rounded-lg border border-red-200 focus:outline-none focus:ring-1 focus:ring-red-500 mb-3 resize-none bg-white text-slate-700" 
-                          rows={2} 
-                          placeholder="Ex: Cárie oculta, dor pulsante..."
-                          value={problemNote}
-                          onChange={(e) => setProblemNote(e.target.value)}
-                        />
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm" onClick={() => { setIsAddingProblem(false); setProblemNote(''); }} className="bg-white hover:bg-red-50 text-red-700 border-red-200">Cancelar</Button>
-                          <Button size="sm" onClick={confirmProblem} className="bg-red-600 hover:bg-red-700 border-red-600 text-white shadow-sm gap-1.5"><AlertCircle size={14}/> Salvar</Button>
+                      <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl shadow-inner space-y-3">
+                        <p className="text-[11px] font-bold text-red-800 uppercase tracking-wide">
+                          {selectedFaces.length === 0
+                            ? 'Observação — Dente Inteiro'
+                            : selectedFaces.length === 1
+                              ? `Observação — Face ${selectedFaces[0]}`
+                              : 'Observação por Face'}
+                        </p>
+
+                        {/* Toggle: mesmo problema nas faces — só aparece com 2+ faces */}
+                        {selectedFaces.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSameNoteForAll(v => !v);
+                              setProblemNotes({});
+                            }}
+                            className="flex items-center gap-2 w-full text-left"
+                          >
+                            <div className={`w-8 h-4 rounded-full flex items-center px-0.5 transition-colors duration-200 ${
+                              sameNoteForAll ? 'bg-red-500' : 'bg-slate-300'
+                            }`}>
+                              <div className={`w-3 h-3 bg-white rounded-full shadow transition-transform duration-200 ${
+                                sameNoteForAll ? 'translate-x-4' : 'translate-x-0'
+                              }`} />
+                            </div>
+                            <span className="text-[11px] font-semibold text-slate-600">
+                              Mesmo problema em todas as faces ({selectedFaces.join(', ')})
+                            </span>
+                          </button>
+                        )}
+
+                        {/* Dente inteiro, 1 face, ou toggle ativado → campo único */}
+                        {(selectedFaces.length <= 1 || sameNoteForAll) && (() => {
+                          const key = 'all';
+                          return (
+                            <textarea
+                              key={key}
+                              className="w-full text-xs p-3 rounded-lg border border-red-200 focus:outline-none focus:ring-1 focus:ring-red-500 resize-none bg-white text-slate-700"
+                              rows={3}
+                              placeholder={
+                                selectedFaces.length === 0
+                                  ? 'Ex: Cárie oculta, dor pulsante...'
+                                  : selectedFaces.length === 1
+                                    ? `Descrição do problema na face ${selectedFaces[0]}...`
+                                    : `Problema em ambas as faces (${selectedFaces.join(', ')})...`
+                              }
+                              value={problemNotes[key] || ''}
+                              onChange={e => setProblemNotes(prev => ({ ...prev, [key]: e.target.value }))}
+                              autoFocus
+                            />
+                          );
+                        })()}
+
+                        {/* 2+ faces sem toggle → campo por face */}
+                        {selectedFaces.length > 1 && !sameNoteForAll && (
+                          <div className="space-y-3">
+                            {selectedFaces.map(face => (
+                              <div key={face}>
+                                <label className="text-[10px] font-bold text-red-700 uppercase tracking-widest mb-1 block">Face {face}</label>
+                                <textarea
+                                  className="w-full text-xs p-2.5 rounded-lg border border-red-200 focus:outline-none focus:ring-1 focus:ring-red-500 resize-none bg-white text-slate-700"
+                                  rows={2}
+                                  placeholder={`Descreva o problema na face ${face}...`}
+                                  value={problemNotes[face] || ''}
+                                  onChange={e => setProblemNotes(prev => ({ ...prev, [face]: e.target.value }))}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="flex justify-end gap-2 pt-1">
+                          <Button variant="outline" size="sm" onClick={() => { setIsAddingProblem(false); setProblemNotes({}); setSameNoteForAll(false); }} className="bg-white hover:bg-red-50 text-red-700 border-red-200">Cancelar</Button>
+                          <Button size="sm" onClick={confirmProblem} className="bg-red-600 hover:bg-red-700 text-white shadow-sm gap-1.5"><AlertCircle size={14}/> Salvar Problema</Button>
                         </div>
                       </div>
                     ) : (

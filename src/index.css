@@ -37,8 +37,19 @@
 
   /* Container Geral */
   .fc {
-    @apply font-sans;
+    font-family: 'Inter', sans-serif !important;
     font-size: 0.875rem !important; /* 14px, padrão text-sm para alinhar com o resto do app */
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Garante herança da Inter em todos os elementos do FullCalendar */
+  .fc *,
+  .fc button,
+  .fc input,
+  .fc th,
+  .fc td,
+  .fc a {
+    font-family: 'Inter', sans-serif !important;
   }
 
   /* Toolbar */
@@ -76,27 +87,51 @@
 
   /* Cabeçalhos de Coluna (Dias) */
   .fc .fc-col-header-cell {
-    @apply bg-slate-50/50 py-1.5 border-slate-200 font-medium text-slate-500;
+    @apply bg-slate-50 py-2 border-slate-200;
   }
 
   .fc .fc-col-header-cell-cushion {
-    font-size: 12px !important;
-    @apply no-underline;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    @apply no-underline text-slate-500;
+  }
+
+  /* Destaque do dia atual no cabeçalho */
+  .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion {
+    @apply text-teal-600;
   }
 
   /* Slots de Tempo */
   .fc .fc-timegrid-slot {
-    @apply h-[40px] border-slate-100;
+    @apply h-[48px] border-slate-100;
   }
 
   .fc .fc-timegrid-slot-label-cushion,
   .fc .fc-timegrid-slot-label {
-    font-size: 11px !important;
-    @apply font-medium text-slate-400 pr-1 align-top pt-1;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    @apply text-slate-400 pr-2 align-top pt-1;
   }
 
   .fc .fc-timegrid-axis {
     @apply border-r-0;
+  }
+
+  /* Célula de hoje */
+  .fc .fc-day-today {
+    background-color: #f0fdfa !important;
+  }
+
+  /* Número do dia (month view) */
+  .fc .fc-daygrid-day-number {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    @apply text-slate-600 no-underline;
+  }
+  .fc .fc-day-today .fc-daygrid-day-number {
+    @apply text-teal-600;
   }
 
   /* Linhas e Células */

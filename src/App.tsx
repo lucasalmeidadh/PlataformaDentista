@@ -3,6 +3,7 @@ import { LoginView } from './pages/Auth/LoginView';
 import { DashboardLayout } from './ui/compositions/DashboardLayout';
 import { AgendaView } from './pages/Agenda/AgendaView';
 import { PatientsView } from './pages/Patients/PatientsView';
+import { PatientDetailView } from './pages/Patients/PatientDetailView';
 import { FinanceView } from './pages/Finance/FinanceView';
 import { RecallView } from './pages/Recall/RecallView';
 import { SettingsView } from './pages/Settings/SettingsView';
@@ -21,6 +22,7 @@ function App() {
           <Route index element={<Navigate to="agenda" replace />} />
           <Route path="agenda" element={<AgendaView />} />
           <Route path="pacientes" element={<PatientsView />} />
+          <Route path="pacientes/:id" element={<PatientDetailView />} />
           <Route path="estoque" element={<InventoryView />} />
           <Route path="financeiro" element={<FinanceView />} />
           <Route path="relatorios" element={<ReportsView />} />
